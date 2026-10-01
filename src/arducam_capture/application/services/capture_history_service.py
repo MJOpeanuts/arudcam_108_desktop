@@ -1,9 +1,9 @@
-from arudcam_capture.domain.errors import CaptureStorageError
-from arudcam_capture.domain.models.capture import CaptureFilters, CaptureStatus
-from arudcam_capture.infrastructure.persistence.capture_repository import (
+from arducam_capture.domain.errors import CaptureStorageError
+from arducam_capture.domain.models.capture import CaptureFilters, CaptureStatus
+from arducam_capture.infrastructure.persistence.capture_repository import (
     SqlAlchemyCaptureRepository,
 )
-from arudcam_capture.infrastructure.storage.local_file_storage import LocalFileStorage
+from arducam_capture.infrastructure.storage.local_file_storage import LocalFileStorage
 
 
 class CaptureHistoryService:
@@ -12,6 +12,12 @@ class CaptureHistoryService:
     ) -> None:
         self._repository = repository
         self._storage = storage
+
+    def read_image(self, capture_id: str) -> bytes:
+        record = self._repository.get(capture_id)
+        if record is None:
+            raise KeyError(f"Cliché introuvable : {capture_id}.")
+        return self._storage.resolve(record.relative_path).read_bytes()
 
     def list_captures(self, filters: CaptureFilters = CaptureFilters()):
         records = self._repository.list(filters)
@@ -35,4 +41,3 @@ class CaptureHistoryService:
         except OSError as error:
             raise CaptureStorageError("Impossible de supprimer le fichier du cliché.") from error
         self._repository.update_status(capture_id, CaptureStatus.DELETED)
-

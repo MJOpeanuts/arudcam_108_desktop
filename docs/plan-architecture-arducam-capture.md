@@ -1,7 +1,8 @@
 # Plan d'architecture — Arducam Capture
 
-> Statut : **proposition en attente de validation**. Aucun code applicatif n'est généré à ce stade,
-> conformément à la demande (« Attends ma validation du plan avant de générer le code. »).
+> Statut : **mise en œuvre v0.1 démarrée** à la demande de l'utilisateur. Le socle applicatif et le
+> mode de démonstration sont implémentés ; les adaptateurs caméra réels restent bloqués en attente
+> des validations matérielles de la section 9.
 >
 > Nom provisoire de l'application : **Arducam Capture**
 > Nom du package Python : `arducam_capture`
@@ -658,7 +659,13 @@ candidats et ne doivent pas être considérées comme un choix définitif.**
 
 ## Prochaine étape
 
-Ce plan attend une validation explicite avant toute génération de code applicatif
-(`src/arducam_capture/...`), conformément à la demande initiale. Les points marqués *à confirmer*
-ou *hypothèse* dans ce document doivent être tranchés (ou acceptés comme hypothèses de travail)
-avant de démarrer l'étape 1 du plan d'implémentation (§8).
+L'utilisateur a demandé l'exécution du plan. Le dépôt contient désormais le socle Python, les modèles
+de domaine, les migrations SQLite, les services de capture/historique/export, l'interface locale et
+un adaptateur simulé pour le développement sans caméra. Les critères de sécurité locale sont appliqués
+au stockage atomique et aux exports CSV/XLSX.
+
+Les adaptateurs `WindowsCameraAdapter` et `LinuxV4L2CameraAdapter`, l'aperçu vidéo et la capture réelle
+108 MP ne sont pas implémentés : aucune caméra matérielle n'est disponible ici pour confirmer les
+capacités et interfaces nécessaires. Ils constituent la prochaine étape après exécution du protocole
+de la section 9 sur la B0494C. L'application signale clairement le mode démonstration et ne présente
+pas de capacités matérielles fictives comme étant réelles.

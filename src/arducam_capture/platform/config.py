@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -11,8 +12,7 @@ class AppSettings(BaseSettings):
     def resolved_data_dir(self) -> Path:
         if self.data_dir is not None:
             return self.data_dir.expanduser().resolve()
-        if home := __import__("os").environ.get("LOCALAPPDATA"):
+        if home := os.environ.get("LOCALAPPDATA"):
             return Path(home) / "ArducamCapture"
-        base = Path(__import__("os").environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
+        base = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
         return base / "arducam-capture"
-

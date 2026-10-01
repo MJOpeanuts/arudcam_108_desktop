@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from arducam_capture.domain.models.capture import CaptureStatus
@@ -17,7 +17,8 @@ class CameraRecord(Base):
     os_platform: Mapped[str] = mapped_column(String, nullable=False)
     first_seen_at_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     last_seen_at_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    is_connected: Mapped[bool] = mapped_column(Integer, default=True, nullable=False)
+    is_connected: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    capabilities_json: Mapped[str | None] = mapped_column(Text)
 
 
 class CaptureRecord(Base):
@@ -39,11 +40,18 @@ class CaptureRecord(Base):
     file_name: Mapped[str] = mapped_column(String, nullable=False)
     relative_path: Mapped[str] = mapped_column(String, nullable=False)
     created_at_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at_local: Mapped[str] = mapped_column(String, nullable=False)
     width: Mapped[int] = mapped_column(Integer, nullable=False)
     height: Mapped[int] = mapped_column(Integer, nullable=False)
     image_format: Mapped[str] = mapped_column(String, nullable=False)
     file_size_bytes: Mapped[int | None] = mapped_column(Integer)
-    controls_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    focus_value: Mapped[int | None] = mapped_column(Integer)
+    exposure: Mapped[int | None] = mapped_column(Integer)
+    gain: Mapped[int | None] = mapped_column(Integer)
+    white_balance: Mapped[int | None] = mapped_column(Integer)
+    brightness: Mapped[int | None] = mapped_column(Integer)
+    extra_params_json: Mapped[str | None] = mapped_column(Text)
+    capture_mode: Mapped[str] = mapped_column(String, nullable=False)
     capture_duration_ms: Mapped[int | None] = mapped_column(Integer)
     sha256: Mapped[str | None] = mapped_column(String)
     status: Mapped[str] = mapped_column(String, nullable=False)
@@ -53,3 +61,10 @@ class CaptureRecord(Base):
     def status_value(self) -> CaptureStatus:
         return CaptureStatus(self.status)
 
+
+class SettingRecord(Base):
+    __tablename__ = "settings"
+
+    key: Mapped[str] = mapped_column(String, primary_key=True)
+    value: Mapped[str | None] = mapped_column(Text)
+    updated_at_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

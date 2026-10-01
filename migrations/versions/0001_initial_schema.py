@@ -23,6 +23,7 @@ def upgrade() -> None:
         sa.Column("first_seen_at_utc", sa.DateTime(timezone=True), nullable=False),
         sa.Column("last_seen_at_utc", sa.DateTime(timezone=True), nullable=False),
         sa.Column("is_connected", sa.Integer(), nullable=False, server_default="1"),
+        sa.Column("capabilities_json", sa.Text(), nullable=True),
     )
     op.create_table(
         "captures",
@@ -31,12 +32,19 @@ def upgrade() -> None:
         sa.Column("file_name", sa.String(), nullable=False),
         sa.Column("relative_path", sa.String(), nullable=False),
         sa.Column("created_at_utc", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("created_at_local", sa.String(), nullable=False),
         sa.Column("width", sa.Integer(), nullable=False),
         sa.Column("height", sa.Integer(), nullable=False),
         sa.Column("image_format", sa.String(), nullable=False),
         sa.Column("file_size_bytes", sa.Integer(), nullable=True),
-        sa.Column("controls_json", sa.Text(), nullable=False, server_default="{}"),
+        sa.Column("focus_value", sa.Integer(), nullable=True),
+        sa.Column("exposure", sa.Integer(), nullable=True),
+        sa.Column("gain", sa.Integer(), nullable=True),
+        sa.Column("white_balance", sa.Integer(), nullable=True),
+        sa.Column("brightness", sa.Integer(), nullable=True),
+        sa.Column("extra_params_json", sa.Text(), nullable=True),
         sa.Column("capture_duration_ms", sa.Integer(), nullable=True),
+        sa.Column("capture_mode", sa.String(), nullable=False),
         sa.Column("sha256", sa.String(), nullable=True),
         sa.Column("status", sa.String(), nullable=False),
         sa.Column("error_message", sa.Text(), nullable=True),
@@ -63,4 +71,3 @@ def downgrade() -> None:
     op.drop_index("ix_captures_created_at_utc", table_name="captures")
     op.drop_table("captures")
     op.drop_table("cameras")
-

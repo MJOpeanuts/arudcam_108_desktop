@@ -3,8 +3,8 @@ from io import BytesIO, StringIO
 
 from openpyxl import Workbook
 
-from arudcam_capture.domain.models.capture import CaptureFilters
-from arudcam_capture.infrastructure.persistence.capture_repository import (
+from arducam_capture.domain.models.capture import CaptureFilters
+from arducam_capture.infrastructure.persistence.capture_repository import (
     SqlAlchemyCaptureRepository,
 )
 
@@ -54,4 +54,3 @@ class ExportService:
         output = BytesIO()
         workbook.save(output)
         return output.getvalue()
-

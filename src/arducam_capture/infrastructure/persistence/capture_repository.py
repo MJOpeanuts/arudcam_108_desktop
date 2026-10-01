@@ -28,6 +28,7 @@ class SqlAlchemyCaptureRepository:
                         first_seen_at_utc=now,
                         last_seen_at_utc=now,
                         is_connected=descriptor.is_connected,
+                        capabilities_json=None,
                     )
                 )
             else:
@@ -48,8 +49,29 @@ class SqlAlchemyCaptureRepository:
                     height=result.height,
                     image_format=result.image_format,
                     file_size_bytes=result.file_size_bytes,
-                    controls_json=json.dumps(result.controls, sort_keys=True),
+                    created_at_local=result.created_at_local,
+                    focus_value=result.controls.get("focus_absolute"),
+                    exposure=result.controls.get("exposure_absolute"),
+                    gain=result.controls.get("gain"),
+                    white_balance=result.controls.get("white_balance"),
+                    brightness=result.controls.get("brightness"),
+                    extra_params_json=json.dumps(
+                        {
+                            key: value
+                            for key, value in result.controls.items()
+                            if key
+                            not in {
+                                "focus_absolute",
+                                "exposure_absolute",
+                                "gain",
+                                "white_balance",
+                                "brightness",
+                            }
+                        },
+                        sort_keys=True,
+                    ),
                     capture_duration_ms=result.duration_ms,
+                    capture_mode=f"still_{result.width}x{result.height}",
                     sha256=result.sha256,
                     status=result.status.value,
                 )
@@ -78,4 +100,3 @@ class SqlAlchemyCaptureRepository:
             record = session.get(CaptureRecord, capture_id)
             if record is not None:
                 record.status = status.value
-

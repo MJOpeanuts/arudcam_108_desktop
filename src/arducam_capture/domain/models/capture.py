@@ -17,6 +17,7 @@ class CaptureResult:
     file_name: str
     relative_path: str
     created_at_utc: datetime
+    created_at_local: str
     width: int
     height: int
     image_format: str
@@ -24,6 +25,7 @@ class CaptureResult:
     sha256: str
     controls: dict[str, int]
     duration_ms: int
+    capture_mode: str
     status: CaptureStatus = CaptureStatus.CAPTURED
 
 
@@ -33,4 +35,3 @@ class CaptureFilters:
     status: CaptureStatus | None = None
     start_utc: datetime | None = None
     end_utc: datetime | None = None
-
