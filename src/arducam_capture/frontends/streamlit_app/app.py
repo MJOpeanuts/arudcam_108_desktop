@@ -1,10 +1,9 @@
-from datetime import date, datetime, time, timezone
+from datetime import UTC, date, datetime, time
 from pathlib import Path
 
 import streamlit as st
 
 from arducam_capture.composition import create_services
-from arducam_capture.domain.models.camera import ControlKind
 from arducam_capture.domain.models.capture import CaptureFilters, CaptureStatus
 from arducam_capture.platform.config import AppSettings
 
@@ -59,12 +58,8 @@ with history_tab:
     start_day = st.date_input("Du", value=date.today(), disabled=not filters_enabled)
     end_day = st.date_input("Au", value=date.today(), disabled=not filters_enabled)
     selected_status = st.selectbox("Statut", ["Tous", *[item.value for item in CaptureStatus]])
-    start_utc = (
-        datetime.combine(start_day, time.min, tzinfo=timezone.utc) if filters_enabled else None
-    )
-    end_utc = (
-        datetime.combine(end_day, time.max, tzinfo=timezone.utc) if filters_enabled else None
-    )
+    start_utc = datetime.combine(start_day, time.min, tzinfo=UTC) if filters_enabled else None
+    end_utc = datetime.combine(end_day, time.max, tzinfo=UTC) if filters_enabled else None
     filters = CaptureFilters(
         camera_id=camera.camera_id,
         status=None if selected_status == "Tous" else CaptureStatus(selected_status),

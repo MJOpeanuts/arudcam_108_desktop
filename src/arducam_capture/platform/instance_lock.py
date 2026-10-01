@@ -44,4 +44,3 @@ class InstanceLock:
 
             fcntl.flock(self._handle.fileno(), fcntl.LOCK_UN)
         self._handle.close()
-

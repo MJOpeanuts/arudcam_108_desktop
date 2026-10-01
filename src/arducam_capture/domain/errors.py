@@ -8,4 +8,3 @@ class CapabilityNotSupportedError(Exception):
 
 class CaptureStorageError(Exception):
     """Raised when a captured image cannot be stored safely."""
-

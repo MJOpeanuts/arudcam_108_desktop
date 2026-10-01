@@ -1,6 +1,6 @@
 import hashlib
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -31,7 +31,7 @@ class CaptureService:
         if extension not in {"png", "tif", "tiff", "jpg", "jpeg"}:
             raise ValueError(f"Format d'image non pris en charge : {image.source_format}.")
         relative_path, path = self._storage.write_capture(capture_id, image.data, extension)
-        created = datetime.now(timezone.utc)
+        created = datetime.now(UTC)
         result = CaptureResult(
             capture_id=capture_id,
             camera_id=camera_id,

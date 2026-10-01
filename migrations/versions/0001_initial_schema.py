@@ -3,8 +3,8 @@
 Revision ID: 0001_initial_schema
 """
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 revision = "0001_initial_schema"
 down_revision = None
@@ -22,13 +22,18 @@ def upgrade() -> None:
         sa.Column("os_platform", sa.String(), nullable=False),
         sa.Column("first_seen_at_utc", sa.DateTime(timezone=True), nullable=False),
         sa.Column("last_seen_at_utc", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("is_connected", sa.Integer(), nullable=False, server_default="1"),
+        sa.Column("is_connected", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("capabilities_json", sa.Text(), nullable=True),
     )
     op.create_table(
         "captures",
         sa.Column("id", sa.String(), primary_key=True),
-        sa.Column("camera_id", sa.String(), sa.ForeignKey("cameras.id", ondelete="RESTRICT"), nullable=False),
+        sa.Column(
+            "camera_id",
+            sa.String(),
+            sa.ForeignKey("cameras.id", ondelete="RESTRICT"),
+            nullable=False,
+        ),
         sa.Column("file_name", sa.String(), nullable=False),
         sa.Column("relative_path", sa.String(), nullable=False),
         sa.Column("created_at_utc", sa.DateTime(timezone=True), nullable=False),

@@ -1,4 +1,5 @@
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
 
 project_root = Path(SPECPATH).parent
 app = Analysis(
@@ -8,12 +9,14 @@ app = Analysis(
     datas=[
         (str(project_root / "migrations"), "migrations"),
         (str(project_root / "alembic.ini"), "."),
+        *collect_data_files("streamlit"),
+        *copy_metadata("streamlit"),
         (
             str(project_root / "src/arducam_capture/frontends/streamlit_app/app.py"),
             "arducam_capture/frontends/streamlit_app",
         ),
     ],
-    hiddenimports=["streamlit.web.cli"],
+    hiddenimports=["streamlit.web.cli", *collect_submodules("arducam_capture")],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -24,9 +27,8 @@ pyz = PYZ(app.pure)
 exe = EXE(
     pyz,
     app.scripts,
-    app.binaries,
-    app.datas,
     [],
+    exclude_binaries=True,
     name="ArducamCapture",
     console=False,
     upx=True,

@@ -49,3 +49,6 @@ strict = true
 mypy_path = "src"
 packages = ["arducam_capture.domain", "arducam_capture.application"]
 
+[[tool.mypy.overrides]]
+module = ["openpyxl.*"]
+ignore_missing_imports = true

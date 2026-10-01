@@ -3,8 +3,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from arducam_capture.infrastructure.persistence.orm.base import Base
 from arducam_capture.infrastructure.persistence.orm import models  # noqa: F401
+from arducam_capture.infrastructure.persistence.orm.base import Base
 
 config = context.config
 if config.config_file_name is not None:
@@ -35,7 +35,9 @@ def run_migrations_online() -> None:
         connection.exec_driver_sql("PRAGMA foreign_keys=ON")
         connection.exec_driver_sql("PRAGMA journal_mode=WAL")
         connection.exec_driver_sql("PRAGMA busy_timeout=5000")
-        context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)
+        context.configure(
+            connection=connection, target_metadata=target_metadata, render_as_batch=True
+        )
         with context.begin_transaction():
             context.run_migrations()
 
@@ -44,4 +46,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

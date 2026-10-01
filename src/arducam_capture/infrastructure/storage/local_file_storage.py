@@ -1,6 +1,6 @@
 import os
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from arducam_capture.domain.errors import CaptureStorageError
@@ -12,13 +12,15 @@ class LocalFileStorage:
         self.capture_root = self.root / "captures"
 
     def write_capture(self, capture_id: str, image: bytes, extension: str) -> tuple[str, Path]:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         directory = self.capture_root / now.strftime("%Y/%m/%d")
         directory.mkdir(parents=True, exist_ok=True)
         target = directory / f"{capture_id}.{extension}"
         temporary_path: Path | None = None
         try:
-            with tempfile.NamedTemporaryFile(dir=directory, prefix=".capture-", delete=False) as handle:
+            with tempfile.NamedTemporaryFile(
+                dir=directory, prefix=".capture-", delete=False
+            ) as handle:
                 temporary_path = Path(handle.name)
                 handle.write(image)
                 handle.flush()
@@ -35,4 +37,3 @@ class LocalFileStorage:
         if not target.is_relative_to(self.capture_root):
             raise CaptureStorageError("Chemin de capture en dehors du répertoire autorisé.")
         return target
-

@@ -3,13 +3,12 @@ from arducam_capture.domain.models.capture import CaptureFilters, CaptureStatus
 from arducam_capture.infrastructure.persistence.capture_repository import (
     SqlAlchemyCaptureRepository,
 )
+from arducam_capture.infrastructure.persistence.orm.models import CaptureRecord
 from arducam_capture.infrastructure.storage.local_file_storage import LocalFileStorage
 
 
 class CaptureHistoryService:
-    def __init__(
-        self, repository: SqlAlchemyCaptureRepository, storage: LocalFileStorage
-    ) -> None:
+    def __init__(self, repository: SqlAlchemyCaptureRepository, storage: LocalFileStorage) -> None:
         self._repository = repository
         self._storage = storage
 
@@ -19,7 +18,7 @@ class CaptureHistoryService:
             raise KeyError(f"Cliché introuvable : {capture_id}.")
         return self._storage.resolve(record.relative_path).read_bytes()
 
-    def list_captures(self, filters: CaptureFilters = CaptureFilters()):
+    def list_captures(self, filters: CaptureFilters | None = None) -> list[CaptureRecord]:
         records = self._repository.list(filters)
         for record in records:
             if record.status == CaptureStatus.CAPTURED.value:

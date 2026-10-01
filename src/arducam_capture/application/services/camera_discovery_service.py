@@ -8,4 +8,3 @@ class CameraDiscoveryService:
 
     def list_available_cameras(self) -> list[CameraDescriptor]:
         return self._camera.discover()
-

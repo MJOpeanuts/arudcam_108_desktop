@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from arducam_capture.application.services.camera_control_service import CameraControlService
 from arducam_capture.application.services.camera_discovery_service import (
     CameraDiscoveryService,
 )
-from arducam_capture.application.services.camera_control_service import CameraControlService
 from arducam_capture.application.services.capture_history_service import CaptureHistoryService
 from arducam_capture.application.services.capture_service import CaptureService
 from arducam_capture.application.services.export_service import ExportService

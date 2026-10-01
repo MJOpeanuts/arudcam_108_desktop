@@ -26,4 +26,3 @@ class CameraAdapter(ABC):
 
     @abstractmethod
     def set_autofocus(self, camera_id: str, enabled: bool) -> None: ...
-

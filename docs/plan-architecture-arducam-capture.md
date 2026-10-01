@@ -283,7 +283,7 @@ class CameraCapabilities:
 
 @dataclass(frozen=True)
 class CameraDescriptor:
-    camera_id: str          # identifiant stable si possible (VID:PID[:serial]), sinon index
+    camera_id: str  # identifiant stable si possible (VID:PID[:serial]), sinon index
     name: str
     hardware_reference: str | None
     is_connected: bool
@@ -384,21 +384,26 @@ class CameraDiscoveryService:
     def list_available_cameras(self) -> list[CameraDescriptor]: ...
     def refresh_known_camera(self, camera_id: str) -> CameraDescriptor: ...
 
+
 class CameraControlService:
     def get_capabilities(self, camera_id: str) -> CameraCapabilities: ...
     def set_focus(self, camera_id: str, value: int) -> None: ...
     def set_control(self, camera_id: str, control: ControlKind, value: int) -> None: ...
+
 
 class PreviewService:
     def start(self, camera_id: str, width: int, height: int) -> None: ...
     def read_frame(self, camera_id: str) -> PreviewFrame | None: ...
     def stop(self, camera_id: str) -> None: ...
 
+
 class CaptureService:
     def capture(self, camera_id: str, width: int, height: int) -> CaptureResult: ...
+
     # Garantit : écriture atomique (fichier temporaire + renommage), le statut
     # `captured` n'est persisté qu'après succès complet de l'écriture et du hash
     # SHA-256 ; en cas d'échec, nettoyage du temporaire + statut `failed` avec message.
+
 
 class CaptureHistoryService:
     def list_captures(self, filters: CaptureFilters) -> list[CaptureSummary]: ...
@@ -406,12 +411,15 @@ class CaptureHistoryService:
     def delete_capture(self, capture_id: str, confirmed: bool) -> None: ...
     def check_file_consistency(self, capture_id: str) -> ConsistencyStatus: ...
 
+
 class ExportService:
     def export_csv(self, filters: CaptureFilters, delimiter: str) -> bytes: ...
     def export_excel(self, filters: CaptureFilters) -> bytes: ...
 
+
 class DiagnosticService:
     def build_report(self) -> DiagnosticReport: ...
+
     # versions (python/paquets), état caméra/pilote, état base, chemins, espace disque, logs récents
 ```
 
@@ -664,8 +672,9 @@ de domaine, les migrations SQLite, les services de capture/historique/export, l'
 un adaptateur simulé pour le développement sans caméra. Les critères de sécurité locale sont appliqués
 au stockage atomique et aux exports CSV/XLSX.
 
-Les adaptateurs `WindowsCameraAdapter` et `LinuxV4L2CameraAdapter`, l'aperçu vidéo et la capture réelle
-108 MP ne sont pas implémentés : aucune caméra matérielle n'est disponible ici pour confirmer les
-capacités et interfaces nécessaires. Ils constituent la prochaine étape après exécution du protocole
-de la section 9 sur la B0494C. L'application signale clairement le mode démonstration et ne présente
-pas de capacités matérielles fictives comme étant réelles.
+Cette première version ne comprend pas encore le flux d'aperçu vidéo ni toutes les pages prévues
+(notamment les diagnostics). Les adaptateurs `WindowsCameraAdapter` et `LinuxV4L2CameraAdapter` et la
+capture réelle 108 MP ne sont pas implémentés : aucune caméra matérielle n'est disponible ici pour
+confirmer les capacités et interfaces nécessaires. Ces travaux constituent la prochaine étape après
+exécution du protocole de la section 9 sur la B0494C. L'application signale clairement le mode
+démonstration et ne présente pas de capacités matérielles fictives comme étant réelles.

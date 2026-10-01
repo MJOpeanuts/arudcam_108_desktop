@@ -1,7 +1,7 @@
 from sqlalchemy import inspect
 
-from arducam_capture.platform.migrations import upgrade_database
 from arducam_capture.infrastructure.persistence.session import create_database_engine
+from arducam_capture.platform.migrations import upgrade_database
 
 
 def test_upgrade_creates_initial_schema(tmp_path) -> None:
@@ -15,4 +15,3 @@ def test_upgrade_creates_initial_schema(tmp_path) -> None:
         "ix_captures_created_at_utc",
         "ix_captures_status",
     }
-

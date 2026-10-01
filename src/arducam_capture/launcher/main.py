@@ -11,7 +11,7 @@ def main() -> None:
         from streamlit.web import cli
 
         if getattr(sys, "frozen", False):
-            root = Path(getattr(sys, "_MEIPASS"))
+            root = Path(sys.__dict__["_MEIPASS"])
             app = root / "arducam_capture" / "frontends" / "streamlit_app" / "app.py"
         else:
             app = Path(__file__).parents[1] / "frontends" / "streamlit_app" / "app.py"
@@ -20,7 +20,9 @@ def main() -> None:
             "run",
             str(app),
             "--server.address=127.0.0.1",
+            "--server.port=8501",
             "--server.headless=true",
+            "--global.developmentMode=false",
             "--browser.gatherUsageStats=false",
         ]
         cli.main()

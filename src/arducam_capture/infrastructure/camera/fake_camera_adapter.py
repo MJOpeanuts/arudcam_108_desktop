@@ -42,7 +42,9 @@ class FakeCameraAdapter(CameraAdapter):
     def capture_still(self, camera_id: str, width: int, height: int) -> RawStillImage:
         self._check_camera(camera_id)
         if (width, height) not in self.get_capabilities(camera_id).supported_resolutions:
-            raise CapabilityNotSupportedError("Résolution non prise en charge par la caméra simulée.")
+            raise CapabilityNotSupportedError(
+                "Résolution non prise en charge par la caméra simulée."
+            )
         image = Image.new("RGB", (width, height), color=(35, 89, 135))
         buffer = BytesIO()
         image.save(buffer, format="PNG")
@@ -75,4 +77,3 @@ class FakeCameraAdapter(CameraAdapter):
     def _check_camera(cls, camera_id: str) -> None:
         if camera_id != cls.camera.camera_id:
             raise CameraNotFoundError(f"Caméra introuvable : {camera_id}.")
-

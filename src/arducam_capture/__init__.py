@@ -1,2 +1,1 @@
 """Arducam Capture desktop application."""
-

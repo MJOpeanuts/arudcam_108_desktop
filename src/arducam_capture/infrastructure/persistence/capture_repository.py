@@ -1,11 +1,11 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import Select, select
 from sqlalchemy.orm import sessionmaker
 
-from arducam_capture.domain.models.capture import CaptureFilters, CaptureResult, CaptureStatus
 from arducam_capture.domain.models.camera import CameraDescriptor
+from arducam_capture.domain.models.capture import CaptureFilters, CaptureResult, CaptureStatus
 from arducam_capture.infrastructure.persistence.orm.models import CameraRecord, CaptureRecord
 
 
@@ -14,7 +14,7 @@ class SqlAlchemyCaptureRepository:
         self._sessions = sessions
 
     def ensure_camera(self, descriptor: CameraDescriptor) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         with self._sessions.begin() as session:
             record = session.get(CameraRecord, descriptor.camera_id)
             if record is None:
@@ -77,7 +77,8 @@ class SqlAlchemyCaptureRepository:
                 )
             )
 
-    def list(self, filters: CaptureFilters = CaptureFilters()) -> list[CaptureRecord]:
+    def list(self, filters: CaptureFilters | None = None) -> list[CaptureRecord]:
+        filters = filters or CaptureFilters()
         statement: Select[tuple[CaptureRecord]] = select(CaptureRecord)
         if filters.camera_id:
             statement = statement.where(CaptureRecord.camera_id == filters.camera_id)

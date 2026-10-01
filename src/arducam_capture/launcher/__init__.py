@@ -1,2 +1,1 @@
 """Desktop application launcher."""
-

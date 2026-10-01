@@ -12,4 +12,3 @@ def test_control_range_rejects_values_outside_supported_step() -> None:
         value_range.validate(13)
 
     value_range.validate(14)
-

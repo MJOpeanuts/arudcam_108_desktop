@@ -25,7 +25,9 @@ class ControlRange:
 
     def validate(self, value: int) -> None:
         if not self.minimum <= value <= self.maximum:
-            raise ValueError(f"La valeur doit être comprise entre {self.minimum} et {self.maximum}.")
+            raise ValueError(
+                f"La valeur doit être comprise entre {self.minimum} et {self.maximum}."
+            )
         if (value - self.minimum) % self.step:
             raise ValueError(f"La valeur doit respecter un incrément de {self.step}.")
 
@@ -52,4 +54,3 @@ class RawStillImage:
     height: int
     source_format: str
     controls: dict[str, int]
-

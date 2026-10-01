@@ -24,7 +24,7 @@ EXPORT_COLUMNS = (
 
 
 def _safe_cell(value: object) -> object:
-    if isinstance(value, str) and value.startswith(("=", "+", "-", "@", "\t", "\r")):
+    if isinstance(value, str) and value.lstrip(" \t\r\n").startswith(("=", "+", "-", "@")):
         return "'" + value
     return value
 
@@ -33,7 +33,8 @@ class ExportService:
     def __init__(self, repository: SqlAlchemyCaptureRepository) -> None:
         self._repository = repository
 
-    def export_csv(self, filters: CaptureFilters = CaptureFilters(), delimiter: str = ",") -> bytes:
+    def export_csv(self, filters: CaptureFilters | None = None, delimiter: str = ",") -> bytes:
+        filters = filters or CaptureFilters()
         if len(delimiter) != 1:
             raise ValueError("Le séparateur CSV doit être un seul caractère.")
         output = StringIO(newline="")
@@ -44,7 +45,8 @@ class ExportService:
             writer.writerow(row)
         return output.getvalue().encode("utf-8-sig")
 
-    def export_excel(self, filters: CaptureFilters = CaptureFilters()) -> bytes:
+    def export_excel(self, filters: CaptureFilters | None = None) -> bytes:
+        filters = filters or CaptureFilters()
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = "Captures"

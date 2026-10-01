@@ -14,4 +14,3 @@ def upgrade_database(data_dir: Path) -> None:
     url = URL.create("sqlite", database=str(database)).render_as_string(hide_password=False)
     config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
     command.upgrade(config, "head")
-
