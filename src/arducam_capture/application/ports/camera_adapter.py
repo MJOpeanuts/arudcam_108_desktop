@@ -19,6 +19,9 @@ class CameraAdapter(ABC):
     def capture_still(self, camera_id: str, width: int, height: int) -> RawStillImage: ...
 
     @abstractmethod
+    def capture_preview(self, camera_id: str, max_width: int) -> RawStillImage: ...
+
+    @abstractmethod
     def set_control(self, camera_id: str, control: ControlKind, value: int) -> None: ...
 
     @abstractmethod
