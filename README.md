@@ -28,6 +28,12 @@ Le paquet PyInstaller `onedir` est construit depuis la racine du dépôt avec :
 pyinstaller packaging/pyinstaller.spec
 ```
 
+L'installateur Windows `dist/Arducam Capture Setup.exe` (icône Bureau + menu Démarrer) se génère
+ensuite avec [Inno Setup 6](https://jrsoftware.org/isinfo.php) : `iscc packaging/installer.iss`.
+Au double-clic sur l'icône, l'interface s'ouvre automatiquement dans le navigateur ; le bouton
+« Quitter » (barre latérale) ferme proprement l'application. Relancer l'icône alors que
+l'application tourne rouvre simplement l'interface.
+
 ## État matériel
 
 Les adaptateurs UVC Windows et V4L2 Linux sont volontairement différés : la plage des contrôles,
