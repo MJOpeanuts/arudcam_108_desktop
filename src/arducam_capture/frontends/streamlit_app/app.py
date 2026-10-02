@@ -4,14 +4,15 @@ from pathlib import Path
 import streamlit as st
 
 from arducam_capture.composition import create_services
+from arducam_capture.domain.errors import CameraDisconnectedError
 from arducam_capture.domain.models.capture import CaptureFilters, CaptureStatus
 from arducam_capture.platform.config import AppSettings
 
 st.set_page_config(page_title="Arducam Capture", page_icon="📷", layout="wide")
 st.title("Arducam Capture")
 st.warning(
-    "Mode démonstration : les captures sont simulées. Le pilotage réel de la B0494C "
-    "nécessite les validations matérielles décrites dans le plan d'architecture."
+    "Le pilotage réel de la B0494C (Windows/DirectShow) n'est pas encore validé sur matériel. "
+    "Les captures sont simulées si le backend « fake » est actif."
 )
 
 
@@ -21,7 +22,11 @@ def services_for_data_dir(data_dir: str):
 
 
 services = services_for_data_dir(str(AppSettings().resolved_data_dir()))
-camera = services.discovery.list_available_cameras()[0]
+cameras = services.discovery.list_available_cameras()
+if not cameras:
+    st.error("Aucune caméra Arducam détectée. Vérifiez la connexion USB 3.0 puis rechargez.")
+    st.stop()
+camera = cameras[0]
 capabilities = services.control.get_capabilities(camera.camera_id)
 
 capture_tab, history_tab, export_tab, diagnostic_tab = st.tabs(
@@ -51,8 +56,12 @@ with capture_tab:
         if value != current:
             services.control.set_control(camera.camera_id, control, value)
     if st.button("Capturer", type="primary"):
-        with st.spinner("Capture en cours…"):
-            result = services.capture.capture(camera.camera_id, *resolution)
+        with st.spinner("Capture en cours (plusieurs secondes en 108 MP)…"):
+            try:
+                result = services.capture.capture(camera.camera_id, *resolution)
+            except CameraDisconnectedError:
+                st.error("Caméra déconnectée. Rebranchez-la puis rechargez la page.")
+                st.stop()
         st.success(f"Capture enregistrée : {result.file_name}")
         st.image(services.history.read_image(result.capture_id))
 

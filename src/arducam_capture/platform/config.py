@@ -8,6 +8,8 @@ class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="ARDUCAM_CAPTURE_", extra="ignore")
 
     data_dir: Path | None = None
+    camera_backend: str = "auto"  # auto | windows | fake
+    camera_name_pattern: str = "arducam"
 
     def resolved_data_dir(self) -> Path:
         if self.data_dir is not None:

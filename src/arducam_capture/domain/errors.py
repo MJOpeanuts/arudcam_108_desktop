@@ -8,3 +8,7 @@ class CapabilityNotSupportedError(Exception):
 
 class CaptureStorageError(Exception):
     """Raised when a captured image cannot be stored safely."""
+
+
+class CameraDisconnectedError(Exception):
+    """Raised when the camera is unplugged or stops delivering frames."""

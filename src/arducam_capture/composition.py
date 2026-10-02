@@ -1,6 +1,8 @@
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from arducam_capture.application.ports.camera_adapter import CameraAdapter
 from arducam_capture.application.services.camera_control_service import CameraControlService
 from arducam_capture.application.services.camera_discovery_service import (
     CameraDiscoveryService,
@@ -35,15 +37,31 @@ class ApplicationServices:
     diagnostic: DiagnosticService
 
 
-def create_services(data_dir: Path) -> ApplicationServices:
+def create_camera_adapter(settings: AppSettings) -> CameraAdapter:
+    backend = settings.camera_backend
+    if backend == "auto":
+        backend = "windows" if sys.platform == "win32" else "fake"
+    if backend == "windows":
+        from arducam_capture.infrastructure.camera.windows_dshow_adapter import (
+            WindowsDirectShowCameraAdapter,
+        )
+
+        return WindowsDirectShowCameraAdapter(name_pattern=settings.camera_name_pattern)
+    if backend == "fake":
+        return FakeCameraAdapter()
+    raise ValueError(f"Backend caméra inconnu : {backend}.")
+
+
+def create_services(data_dir: Path, camera: CameraAdapter | None = None) -> ApplicationServices:
     data_dir.mkdir(parents=True, exist_ok=True)
     AppSettings.ensure_layout(data_dir)
     upgrade_database(data_dir)
     engine = create_database_engine(data_dir / "database" / "arducam_capture.db")
     sessions = create_session_factory(engine)
-    camera = FakeCameraAdapter()
+    camera = camera or create_camera_adapter(AppSettings())
     repository = SqlAlchemyCaptureRepository(sessions)
-    repository.ensure_camera(camera.discover()[0])
+    for descriptor in camera.discover():
+        repository.ensure_camera(descriptor)
     storage = LocalFileStorage(data_dir)
     return ApplicationServices(
         discovery=CameraDiscoveryService(camera),
