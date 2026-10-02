@@ -1,3 +1,4 @@
+import os
 from datetime import UTC, date, datetime, time
 from pathlib import Path
 
@@ -10,6 +11,10 @@ from arducam_capture.platform.config import AppSettings
 
 st.set_page_config(page_title="Arducam Capture", page_icon="📷", layout="wide")
 st.title("Arducam Capture")
+with st.sidebar:
+    if st.button("Quitter", help="Ferme l'application et libère la caméra"):
+        st.success("Arducam Capture est fermée. Vous pouvez fermer cet onglet.")
+        os._exit(0)
 st.warning(
     "Le pilotage réel de la B0494C (Windows/DirectShow) n'est pas encore validé sur matériel. "
     "Les captures sont simulées si le backend « fake » est actif."

@@ -1,13 +1,50 @@
+import os
+import socket
 import sys
+import threading
+import time
+import webbrowser
 from pathlib import Path
 
 from arducam_capture.platform.config import AppSettings
 from arducam_capture.platform.instance_lock import InstanceLock
 
 
+HOST = "127.0.0.1"
+PORT = 8501
+URL = f"http://{HOST}:{PORT}"
+
+
+def _open_browser_when_ready(timeout: float = 60.0) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            with socket.create_connection((HOST, PORT), timeout=1):
+                break
+        except OSError:
+            time.sleep(0.3)
+    else:
+        return
+    webbrowser.open(URL)
+
+
 def main() -> None:
+    if getattr(sys, "frozen", False):
+        # Application fenêtrée (sans console) : stdout/stderr peuvent être None.
+        if sys.stdout is None:
+            sys.stdout = open(os.devnull, "w")  # noqa: SIM115
+        if sys.stderr is None:
+            sys.stderr = open(os.devnull, "w")  # noqa: SIM115
     data_dir = AppSettings().resolved_data_dir()
-    with InstanceLock(data_dir / "arducam-capture.lock"):
+    try:
+        lock = InstanceLock(data_dir / "arducam-capture.lock")
+        lock.__enter__()
+    except RuntimeError:
+        # Déjà lancée : on rouvre simplement l'interface existante.
+        webbrowser.open(URL)
+        return
+    with lock:
+        threading.Thread(target=_open_browser_when_ready, daemon=True).start()
         from streamlit.web import cli
 
         if getattr(sys, "frozen", False):
@@ -19,8 +56,8 @@ def main() -> None:
             "streamlit",
             "run",
             str(app),
-            "--server.address=127.0.0.1",
-            "--server.port=8501",
+            f"--server.address={HOST}",
+            f"--server.port={PORT}",
             "--server.headless=true",
             "--global.developmentMode=false",
             "--browser.gatherUsageStats=false",
