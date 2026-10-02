@@ -40,6 +40,9 @@ def run_migrations_online() -> None:
         )
         with context.begin_transaction():
             context.run_migrations()
+        # SQLite n'a pas de DDL transactionnel pour Alembic : sans commit explicite,
+        # l'écriture de alembic_version est perdue à la fermeture de la connexion.
+        connection.commit()
 
 
 if context.is_offline_mode():

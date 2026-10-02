@@ -8,7 +8,7 @@ from pathlib import Path
 
 from arducam_capture.platform.config import AppSettings
 from arducam_capture.platform.instance_lock import InstanceLock
-
+from arducam_capture.platform.migrations import DatabaseInconsistentError, upgrade_database
 
 HOST = "127.0.0.1"
 PORT = 8501
@@ -44,6 +44,13 @@ def main() -> None:
         webbrowser.open(URL)
         return
     with lock:
+        # Migrations terminées avant le démarrage de Streamlit et du navigateur.
+        AppSettings.ensure_layout(data_dir)
+        try:
+            upgrade_database(data_dir)
+        except DatabaseInconsistentError as error:
+            print(error, file=sys.stderr)
+            raise SystemExit(1) from None
         threading.Thread(target=_open_browser_when_ready, daemon=True).start()
         from streamlit.web import cli
 

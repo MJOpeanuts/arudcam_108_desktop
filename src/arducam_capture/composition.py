@@ -22,7 +22,6 @@ from arducam_capture.infrastructure.persistence.session import (
 )
 from arducam_capture.infrastructure.storage.local_file_storage import LocalFileStorage
 from arducam_capture.platform.config import AppSettings
-from arducam_capture.platform.migrations import upgrade_database
 
 
 @dataclass
@@ -55,7 +54,6 @@ def create_camera_adapter(settings: AppSettings) -> CameraAdapter:
 def create_services(data_dir: Path, camera: CameraAdapter | None = None) -> ApplicationServices:
     data_dir.mkdir(parents=True, exist_ok=True)
     AppSettings.ensure_layout(data_dir)
-    upgrade_database(data_dir)
     engine = create_database_engine(data_dir / "database" / "arducam_capture.db")
     sessions = create_session_factory(engine)
     camera = camera or create_camera_adapter(AppSettings())
