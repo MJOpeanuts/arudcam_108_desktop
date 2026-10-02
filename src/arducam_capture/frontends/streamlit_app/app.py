@@ -5,7 +5,7 @@ from pathlib import Path
 import streamlit as st
 
 from arducam_capture.composition import create_services
-from arducam_capture.domain.errors import CameraDisconnectedError
+from arducam_capture.domain.errors import CameraDisconnectedError, CameraDiscoveryError
 from arducam_capture.domain.models.capture import CaptureFilters, CaptureStatus
 from arducam_capture.platform.config import AppSettings
 
@@ -27,7 +27,11 @@ def services_for_data_dir(data_dir: str):
 
 
 services = services_for_data_dir(str(AppSettings().resolved_data_dir()))
-cameras = services.discovery.list_available_cameras()
+try:
+    cameras = services.discovery.list_available_cameras()
+except CameraDiscoveryError as error:
+    st.error(f"Erreur de détection des caméras (différente d'une caméra absente) : {error}")
+    st.stop()
 if not cameras:
     st.error("Aucune caméra Arducam détectée. Vérifiez la connexion USB 3.0 puis rechargez.")
     st.stop()

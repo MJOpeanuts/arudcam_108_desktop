@@ -1,3 +1,4 @@
+import logging
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +13,7 @@ from arducam_capture.application.services.capture_service import CaptureService
 from arducam_capture.application.services.diagnostic_service import DiagnosticService
 from arducam_capture.application.services.export_service import ExportService
 from arducam_capture.application.services.preview_service import PreviewService
+from arducam_capture.domain.errors import CameraDiscoveryError
 from arducam_capture.infrastructure.camera.fake_camera_adapter import FakeCameraAdapter
 from arducam_capture.infrastructure.persistence.capture_repository import (
     SqlAlchemyCaptureRepository,
@@ -22,6 +24,8 @@ from arducam_capture.infrastructure.persistence.session import (
 )
 from arducam_capture.infrastructure.storage.local_file_storage import LocalFileStorage
 from arducam_capture.platform.config import AppSettings
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -58,8 +62,11 @@ def create_services(data_dir: Path, camera: CameraAdapter | None = None) -> Appl
     sessions = create_session_factory(engine)
     camera = camera or create_camera_adapter(AppSettings())
     repository = SqlAlchemyCaptureRepository(sessions)
-    for descriptor in camera.discover():
-        repository.ensure_camera(descriptor)
+    try:
+        for descriptor in camera.discover():
+            repository.ensure_camera(descriptor)
+    except CameraDiscoveryError:
+        logger.exception("Détection des caméras impossible au démarrage")
     storage = LocalFileStorage(data_dir)
     return ApplicationServices(
         discovery=CameraDiscoveryService(camera),
