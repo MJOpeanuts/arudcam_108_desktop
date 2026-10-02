@@ -30,9 +30,7 @@ services = services_for_data_dir(str(AppSettings().resolved_data_dir()))
 try:
     cameras = services.discovery.list_available_cameras()
 except CameraDiscoveryError as error:
-    st.error(
-        f"Erreur de détection des caméras (différente d'une caméra absente) : {error}"
-    )
+    st.error(f"Erreur de détection des caméras (différente d'une caméra absente) : {error}")
     st.stop()
 if not cameras:
     st.error("Aucune caméra Arducam détectée. Vérifiez la connexion USB 3.0 puis rechargez.")
