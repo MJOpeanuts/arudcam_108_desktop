@@ -56,6 +56,15 @@ class FakeCameraAdapter(CameraAdapter):
             controls=self._values.copy(),
         )
 
+    def capture_preview(self, camera_id: str, max_width: int) -> RawStillImage:
+        self._check_camera(camera_id)
+        width = min(max_width, 640)
+        return self.capture_still(camera_id, *self._preview_size(width))
+
+    @staticmethod
+    def _preview_size(width: int) -> tuple[int, int]:
+        return (1280, 720) if width >= 1280 else (640, 480)
+
     def set_control(self, camera_id: str, control: ControlKind, value: int) -> None:
         self._check_camera(camera_id)
         try:

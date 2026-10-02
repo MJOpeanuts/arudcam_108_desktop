@@ -24,11 +24,15 @@ services = services_for_data_dir(str(AppSettings().resolved_data_dir()))
 camera = services.discovery.list_available_cameras()[0]
 capabilities = services.control.get_capabilities(camera.camera_id)
 
-capture_tab, history_tab, export_tab = st.tabs(["Caméra / Capture", "Historique", "Exporter"])
+capture_tab, history_tab, export_tab, diagnostic_tab = st.tabs(
+    ["Caméra / Capture", "Historique", "Exporter", "Diagnostic"]
+)
 
 with capture_tab:
     st.subheader(camera.name)
     st.caption("Aucune capacité n'est présentée comme disponible sauf si l'adaptateur la déclare.")
+    if st.button("Actualiser l'aperçu"):
+        st.image(services.preview.get_frame(camera.camera_id), caption="Aperçu (basse résolution)")
     resolution = st.selectbox(
         "Résolution de capture",
         capabilities.supported_resolutions,
@@ -98,4 +102,20 @@ with export_tab:
         services.export.export_excel(export_filters),
         file_name="captures.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+with diagnostic_tab:
+    st.subheader("Diagnostic")
+    report = services.diagnostic.build_report()
+    st.json(
+        {
+            "Python": report.python_version,
+            "Système": report.os_name,
+            "Caméras": list(report.camera_names),
+            "Répertoire de données": report.data_dir,
+            "Base de données": report.database_path,
+            "Base présente": report.database_exists,
+            "Espace disque libre (Mo)": report.free_disk_bytes // (1024 * 1024),
+            "Journaux": list(report.log_files),
+        }
     )
