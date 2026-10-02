@@ -5,6 +5,7 @@ seul le focus manuel (0–1023, datasheet B0494) est exposé. Exposition, gain, 
 blancs et luminosité restent masqués tant qu'ils ne sont pas validés sur la caméra réelle.
 """
 
+import logging
 import threading
 import time
 from collections.abc import Callable
@@ -13,6 +14,7 @@ from typing import Any
 from arducam_capture.application.ports.camera_adapter import CameraAdapter
 from arducam_capture.domain.errors import (
     CameraDisconnectedError,
+    CameraDiscoveryError,
     CameraNotFoundError,
     CapabilityNotSupportedError,
 )
@@ -38,10 +40,27 @@ WARMUP_FRAMES = 3
 READ_RETRIES = 3
 
 
+logger = logging.getLogger(__name__)
+
+
 def list_directshow_devices() -> list[str]:
+    """Liste les périphériques vidéo DirectShow.
+
+    COM doit être initialisé dans le thread appelant (les threads Streamlit ne le sont pas).
+
+    Hypothèse (à confirmer sur matériel) : l'ordre de ``FilterGraph().get_input_devices()``
+    (CLSID_VideoInputDeviceCategory) est celui utilisé par ``cv2.VideoCapture(index,
+    cv2.CAP_DSHOW)``, car OpenCV énumère la même catégorie DirectShow. L'index PyGrabber
+    est donc utilisé comme index OpenCV.
+    """
+    import comtypes  # type: ignore[import-not-found]
     from pygrabber.dshow_graph import FilterGraph  # type: ignore[import-not-found]
 
-    return list(FilterGraph().get_input_devices())
+    comtypes.CoInitialize()
+    try:
+        return list(FilterGraph().get_input_devices())
+    finally:
+        comtypes.CoUninitialize()
 
 
 class WindowsDirectShowCameraAdapter(CameraAdapter):
@@ -68,8 +87,14 @@ class WindowsDirectShowCameraAdapter(CameraAdapter):
         with self._lock:
             try:
                 names = self._list_devices()
-            except Exception:
-                names = []
+            except Exception as error:
+                logger.exception("Échec de l'énumération des périphériques DirectShow")
+                self._devices = {}
+                self._release()
+                raise CameraDiscoveryError(
+                    "Impossible d'énumérer les caméras DirectShow "
+                    f"({type(error).__name__}: {error}). Consultez les journaux."
+                ) from error
             self._devices = {}
             found: list[CameraDescriptor] = []
             for index, name in enumerate(names):

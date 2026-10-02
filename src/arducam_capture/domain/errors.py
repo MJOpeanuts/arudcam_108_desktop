@@ -12,3 +12,7 @@ class CaptureStorageError(Exception):
 
 class CameraDisconnectedError(Exception):
     """Raised when the camera is unplugged or stops delivering frames."""
+
+
+class CameraDiscoveryError(Exception):
+    """Raised when camera enumeration itself fails (distinct from "no camera found")."""

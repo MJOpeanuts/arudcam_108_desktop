@@ -129,3 +129,86 @@ def test_disconnect_raises_and_recovers(adapter, cv2) -> None:
     cv2.connected = True
     assert adapter.capture_still(camera.camera_id, 1280, 720).data.startswith(b"\x89PNG")
     assert adapter.capture_preview(camera.camera_id, 640).width <= 640
+
+
+ARDUCAM = "Arducam B0494 (USB3 108MP)"
+
+
+def test_two_devices_selects_only_arducam(cv2) -> None:
+    adapter = WindowsDirectShowCameraAdapter(
+        cv2_module=cv2, device_lister=lambda: ["Laptop Camera", ARDUCAM]
+    )
+    cameras = adapter.discover()
+    assert [(c.camera_id, c.name) for c in cameras] == [(f"dshow:1:{ARDUCAM}", ARDUCAM)]
+
+
+def test_name_filter_is_case_insensitive(cv2) -> None:
+    adapter = WindowsDirectShowCameraAdapter(
+        cv2_module=cv2, device_lister=lambda: ["Laptop Camera", "ARDUCAM b0494"]
+    )
+    assert [c.name for c in adapter.discover()] == ["ARDUCAM b0494"]
+
+
+def test_discover_from_secondary_thread(cv2) -> None:
+    import threading
+
+    adapter = WindowsDirectShowCameraAdapter(
+        cv2_module=cv2, device_lister=lambda: ["Laptop Camera", ARDUCAM]
+    )
+    result: list = []
+    errors: list = []
+
+    def run() -> None:
+        try:
+            result.extend(adapter.discover())
+        except Exception as error:  # pragma: no cover
+            errors.append(error)
+
+    thread = threading.Thread(target=run)
+    thread.start()
+    thread.join()
+    assert not errors
+    assert [c.name for c in result] == [ARDUCAM]
+
+
+def test_list_directshow_devices_initialises_com(monkeypatch) -> None:
+    import sys
+    import types
+
+    calls: list[str] = []
+    comtypes = types.ModuleType("comtypes")
+    comtypes.CoInitialize = lambda: calls.append("init")  # type: ignore[attr-defined]
+    comtypes.CoUninitialize = lambda: calls.append("uninit")  # type: ignore[attr-defined]
+
+    class FilterGraph:
+        def get_input_devices(self) -> list[str]:
+            calls.append("list")
+            return ["Laptop Camera", ARDUCAM]
+
+    graph = types.ModuleType("pygrabber.dshow_graph")
+    graph.FilterGraph = FilterGraph  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "comtypes", comtypes)
+    monkeypatch.setitem(sys.modules, "pygrabber", types.ModuleType("pygrabber"))
+    monkeypatch.setitem(sys.modules, "pygrabber.dshow_graph", graph)
+    from arducam_capture.infrastructure.camera.windows_dshow_adapter import (
+        list_directshow_devices,
+    )
+
+    assert list_directshow_devices() == ["Laptop Camera", ARDUCAM]
+    assert calls == ["init", "list", "uninit"]
+
+
+def test_discovery_failure_is_logged_and_distinct(cv2, caplog, monkeypatch) -> None:
+    from arducam_capture.domain.errors import CameraDiscoveryError
+    from arducam_capture.infrastructure.camera import windows_dshow_adapter
+
+    # Une autre suite (alembic fileConfig) peut désactiver les loggers existants.
+    monkeypatch.setattr(windows_dshow_adapter.logger, "disabled", False)
+
+    def boom() -> list[str]:
+        raise OSError("CoInitialize has not been called")
+
+    adapter = WindowsDirectShowCameraAdapter(cv2_module=cv2, device_lister=boom)
+    with caplog.at_level("ERROR"), pytest.raises(CameraDiscoveryError):
+        adapter.discover()
+    assert any(r.exc_info for r in caplog.records)
