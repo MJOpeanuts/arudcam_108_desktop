@@ -59,6 +59,8 @@ ou pendant l'implémentation, notamment lors des tests avec la caméra réelle (
 
 ---
 
+Fiche technique de la caméra : [datasheet-b0494.md](datasheet-b0494.md).
+
 ## 2. Différences Windows / Linux et risques pour le pilotage caméra
 
 Le principe directeur : **ne jamais supposer qu'un contrôle disponible sous un OS l'est aussi sous
